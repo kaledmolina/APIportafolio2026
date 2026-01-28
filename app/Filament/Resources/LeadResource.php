@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\LeadResource\Pages;
 use App\Filament\Resources\LeadResource\RelationManagers;
+use App\Models\Client;
 use App\Models\Lead;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -105,6 +106,47 @@ class LeadResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('convert')
+                    ->label('Convertir a Cliente')
+                    ->icon('heroicon-m-arrow-right-circle')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->modalHeading('Convertir a Cliente')
+                    ->modalDescription('¿Estás seguro de que deseas convertir este interesado en un cliente? Se creará un nuevo registro de cliente y el estado del interesado cambiará a "Convertido".')
+                    ->modalSubmitActionLabel('Sí, convertir')
+                    ->action(function (Lead $record) {
+                        try {
+                            // Check if client already exists by email
+                            if (Client::where('email', $record->email)->exists()) {
+                                \Filament\Notifications\Notification::make()
+                                    ->title('El cliente ya existe')
+                                    ->warning()
+                                    ->send();
+                                return;
+                            }
+
+                            Client::create([
+                                'name' => $record->name,
+                                'email' => $record->email,
+                                'phone' => $record->phone,
+                                'status' => 'active',
+                            ]);
+
+                            $record->update(['status' => 'converted']);
+
+                            \Filament\Notifications\Notification::make()
+                                ->title('Cliente creado exitosamente')
+                                ->success()
+                                ->send();
+                        } catch (\Exception $e) {
+                            \Filament\Notifications\Notification::make()
+                                ->title('Error al convertir')
+                                ->body($e->getMessage())
+                                ->danger()
+                                ->send();
+                        }
+                    })
+                    ->visible(fn(Lead $record) => $record->status !== 'converted'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
