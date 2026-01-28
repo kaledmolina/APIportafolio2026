@@ -19,29 +19,38 @@ class LeadResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+    protected static ?string $modelLabel = 'Interesado';
+    protected static ?string $pluralModelLabel = 'Interesados';
+    protected static ?string $navigationLabel = 'Interesados';
+
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\TextInput::make('name')
+                    ->label('Nombre')
                     ->required()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('email')
+                    ->label('Correo Electrónico')
                     ->email()
                     ->required()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('subject')
+                    ->label('Asunto')
                     ->required()
                     ->maxLength(255),
                 Forms\Components\Textarea::make('message')
+                    ->label('Mensaje')
                     ->required()
                     ->columnSpanFull(),
                 Forms\Components\Select::make('status')
+                    ->label('Estado')
                     ->options([
-                        'new' => 'New',
-                        'contacted' => 'Contacted',
-                        'converted' => 'Converted',
-                        'archived' => 'Archived',
+                        'new' => 'Nuevo',
+                        'contacted' => 'Contactado',
+                        'converted' => 'Convertido',
+                        'archived' => 'Archivado',
                     ])
                     ->required()
                     ->default('new'),
@@ -53,14 +62,33 @@ class LeadResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
+                    ->label('Nombre')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('email')
+                    ->label('Correo')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('subject')
+                    ->label('Asunto')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('status')
-                    ->badge(),
+                    ->label('Estado')
+                    ->badge()
+                    ->formatStateUsing(fn(string $state): string => match ($state) {
+                        'new' => 'Nuevo',
+                        'contacted' => 'Contactado',
+                        'converted' => 'Convertido',
+                        'archived' => 'Archivado',
+                        default => $state,
+                    })
+                    ->color(fn(string $state): string => match ($state) {
+                        'new' => 'info',
+                        'contacted' => 'warning',
+                        'converted' => 'success',
+                        'archived' => 'gray',
+                        default => 'gray',
+                    }),
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label('Fecha de Registro')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
