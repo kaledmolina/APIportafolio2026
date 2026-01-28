@@ -36,6 +36,10 @@ class LeadResource extends Resource
                     ->email()
                     ->required()
                     ->maxLength(255),
+                Forms\Components\TextInput::make('phone')
+                    ->label('Celular')
+                    ->tel()
+                    ->maxLength(20),
                 Forms\Components\TextInput::make('subject')
                     ->label('Asunto')
                     ->required()
@@ -66,6 +70,9 @@ class LeadResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('email')
                     ->label('Correo')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('phone')
+                    ->label('Celular')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('subject')
                     ->label('Asunto')
